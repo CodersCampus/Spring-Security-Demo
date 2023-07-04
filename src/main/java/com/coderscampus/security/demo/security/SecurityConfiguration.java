@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.coderscampus.security.demo.repository.UserRepository;
 import com.coderscampus.security.demo.service.UserService;
 
 @Configuration
@@ -19,7 +20,13 @@ import com.coderscampus.security.demo.service.UserService;
 public class SecurityConfiguration {
 
 // Example URL -> http://localhost:8080/products
+    private UserRepository userRepository;
     
+    public SecurityConfiguration(UserRepository userRepository) {
+    super();
+    this.userRepository = userRepository;
+}
+
     @Bean
     public PasswordEncoder passwordEncoder () {
         return new BCryptPasswordEncoder();
@@ -27,7 +34,7 @@ public class SecurityConfiguration {
     
     @Bean
     public UserDetailsService userDetailsService () {
-        return new UserService(passwordEncoder());
+        return new UserService(passwordEncoder(), userRepository);
     }
     
     @Bean
