@@ -5,7 +5,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.coderscampus.security.demo.service.UserService;
 
 @Configuration
 @EnableWebSecurity
@@ -14,11 +17,17 @@ public class SecurityConfiguration {
 // Example URL -> http://localhost:8080/products
     
     @Bean
+    public UserDetailsService userDetailsService () {
+        return new UserService();
+    }
+    
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((request) -> {
             request.requestMatchers("/products").authenticated()
                    .anyRequest().permitAll();
         })
+        .userDetailsService(userDetailsService())
         .formLogin(Customizer.withDefaults());
         
 //        authorizeHttpRequests().requestMatchers("/public/**").permitAll().anyRequest()
