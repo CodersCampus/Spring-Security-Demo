@@ -24,8 +24,8 @@ public class UserController {
 
     @PostMapping("")
     public ResponseEntity<User> signUpUser (@RequestBody User user) {
-        User newUser = new User(user.getUsername(), passwordEncoder.encode(user.getPassword()));
-        User savedUser = userRepository.save(newUser);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User savedUser = userRepository.save(user);
         
         return ResponseEntity.ok(savedUser);
     }

@@ -35,7 +35,7 @@ public class SecurityConfiguration {
     
     @Bean
     public UserDetailsService userDetailsService () {
-        return new UserService(passwordEncoder(), userRepository);
+        return new UserService(userRepository);
     }
     
     @Bean
@@ -44,17 +44,11 @@ public class SecurityConfiguration {
           .authorizeHttpRequests((request) -> {
             request
                    .requestMatchers("/api/v1/users").permitAll()
-                   .requestMatchers("/products").authenticated();
+                   .anyRequest().authenticated();
         })
         .authenticationProvider(authenticationProvider())
         .formLogin(Customizer.withDefaults());
         
-//        authorizeHttpRequests().requestMatchers("/public/**").permitAll().anyRequest()
-//                .hasRole("USER").and()
-//                // Possibly more configuration ...
-//                .formLogin() // enable form based log in
-//                // set permitAll for all URLs associated with Form Login
-//                .permitAll();
         return http.build();
     }
     
