@@ -1,6 +1,10 @@
 package com.coderscampus.security.demo.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 public class JwtService {
     
@@ -14,5 +18,11 @@ public class JwtService {
      */
     @Value("${jwt.signingKey}")
     private String jwtSigningKey;
+    
+    public String generateToken(UserDetails user) {
+        Jwts.builder()
+            .setClaims(null)
+            .signWith(null, SignatureAlgorithm.HS256);
+    }
     
 }
