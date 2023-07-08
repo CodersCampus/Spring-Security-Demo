@@ -1,5 +1,7 @@
 package com.coderscampus.security.demo.service;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +42,8 @@ class JwtServiceTest {
         String jwt = sut.generateToken(extraClaims, user);
         
         // Assert
-        System.out.println(jwt);
+        assertTrue(jwt.startsWith("ey"));
+            
     }
 
 }

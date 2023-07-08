@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -21,10 +22,10 @@ public class JwtService {
     /** 
      * What we need to be able to do with JWTs in this class
      * 0. Create a JWT signing key (Done)
-     * 1. Create / generate the JWT
-     * 2. Extract claims (ie get stuff from the payload)
-     * 3. Verify that the JWT valid
-     * 4. Sign the JWT
+     * 1. Create / generate the JWT (Done)
+     * 2. Extract claims (ie get stuff from the payload) ***
+     * 3. Verify that the JWT valid ***
+     * 4. Sign the JWT (Done)
      */
     @Value("${jwt.signingKey}")
     private String jwtSigningKey;
@@ -38,6 +39,7 @@ public class JwtService {
             .setSubject(user.getUsername())
             .setIssuedAt(new Date())
             .setExpiration( new Date(System.currentTimeMillis() + expirationTimeInMillis) )
+            .setHeaderParam("typ", Header.JWT_TYPE)
             .signWith(getSigningKey(), SignatureAlgorithm.HS256)
             .compact();
         return jwt;
