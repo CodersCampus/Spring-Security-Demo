@@ -1,5 +1,7 @@
 package com.coderscampus.security.demo.service;
 
+import java.util.Optional;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +28,10 @@ public class UserService implements UserDetailsService {
         if (user == null) throw new UsernameNotFoundException("Bad Credentials");
         
         return user;
+    }
+    
+    public Optional<User> findById (Integer userId) {
+        return userRepository.findById(userId);
     }
 
 }
