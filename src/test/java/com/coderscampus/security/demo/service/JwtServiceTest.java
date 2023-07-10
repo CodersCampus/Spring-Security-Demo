@@ -1,6 +1,7 @@
 package com.coderscampus.security.demo.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
@@ -62,8 +63,54 @@ class JwtServiceTest {
         // Act
         Claims allClaims = sut.extractAllClaims(token);
         
-        assertEquals("trevor@coderscampus.com", allClaims.getSubject());
         
+        assertTrue(allClaims.size() >= 3);
+    }
+    
+    @Test
+    @DisplayName("should extract valid subject from claims")
+    void testExtractSubjectClaim () {
+     // Arrange
+        Map<String, Object> extraClaims = new HashMap<>();
+        User user = new User("trevor@coderscampus.com", "abc123");
+        String token = sut.generateToken(extraClaims, user);
+        
+        // Act
+        String subject = sut.getSubject(token);
+        
+        // Assert
+        assertEquals("trevor@coderscampus.com", subject);
+    }
+    
+    @Test
+    @DisplayName("should return a valid token")
+    void testValidToken () {
+     // Arrange
+        Map<String, Object> extraClaims = new HashMap<>();
+        User user = new User("trevor@coderscampus.com", "abc123");
+        String token = sut.generateToken(extraClaims, user);
+        
+        // Act
+        Boolean isValidToken = sut.isValidToken(token, user);
+        
+        // Assert
+        assertTrue(isValidToken);
+    }
+    
+    @Test
+    @DisplayName("should return an invalid token")
+    void testInvalidToken () {
+     // Arrange
+        Map<String, Object> extraClaims = new HashMap<>();
+        User validUser = new User("trevor@coderscampus.com", "abc123");
+        User invalidUser = new User("trevor.page@coderscampus.com", "abc123");
+        String token = sut.generateToken(extraClaims, validUser);
+        
+        // Act
+        Boolean isValidToken = sut.isValidToken(token, invalidUser);
+        
+        // Assert
+        assertFalse(isValidToken);
     }
 
 }

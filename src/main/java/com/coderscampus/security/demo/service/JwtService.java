@@ -25,8 +25,8 @@ public class JwtService {
      * What we need to be able to do with JWTs in this class
      * 0. Create a JWT signing key (Done)
      * 1. Create / generate the JWT (Done)
-     * 2. Extract claims (ie get stuff from the payload) ***
-     * 3. Verify that the JWT valid ***
+     * 2. Extract claims (ie get stuff from the payload) (Done)
+     * 3. Verify that the JWT valid (Done)
      * 4. Sign the JWT (Done)
      */
     @Value("${jwt.signingKey}")
@@ -48,7 +48,7 @@ public class JwtService {
         return subject;
     }
     
-    public Boolean isTokenValid (String token, UserDetails user) {
+    public Boolean isValidToken (String token, UserDetails user) {
         String subject = getSubject(token);
         Date expirationDate = extractClaim(token, Claims::getExpiration);
         return user.getUsername().equalsIgnoreCase(subject) && new Date().before(expirationDate);
