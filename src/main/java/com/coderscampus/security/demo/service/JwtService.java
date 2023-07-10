@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -31,6 +32,15 @@ public class JwtService {
     private String jwtSigningKey;
     @Value("${jwt.expirationTimeInMillis}")
     private Long expirationTimeInMillis;
+    
+    public Claims extractAllClaims (String token) {
+        Claims body = Jwts.parserBuilder()
+            .setSigningKey(getSigningKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+        return body;
+    }
     
     public String generateToken(Map<String, Object> extraClaims, UserDetails user) {
         
