@@ -3,6 +3,7 @@ package com.coderscampus.security.demo.service;
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
@@ -40,6 +41,22 @@ public class JwtService {
             .parseClaimsJws(token)
             .getBody();
         return body;
+    }
+    
+    public String getSubject (String token) {
+        String subject = extractClaim(token, Claims::getSubject);
+        return subject;
+    }
+    
+    public Boolean isTokenValid (String token, UserDetails user) {
+        String subject = getSubject(token);
+        Date expirationDate = extractClaim(token, Claims::getExpiration);
+        return user.getUsername().equalsIgnoreCase(subject) && new Date().before(expirationDate);
+    }
+    
+    private <R> R extractClaim (String token, Function<Claims, R> claimsExtract) {
+        Claims allClaims = extractAllClaims(token);
+        return claimsExtract.apply(allClaims);
     }
     
     public String generateToken(Map<String, Object> extraClaims, UserDetails user) {
