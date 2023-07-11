@@ -9,25 +9,30 @@ import org.springframework.stereotype.Service;
 
 import com.coderscampus.security.demo.domain.RefreshToken;
 import com.coderscampus.security.demo.domain.User;
+import com.coderscampus.security.demo.repository.RefreshTokenRepository;
 
 @Service
 public class RefreshTokenService {
     
     private UserService userService;
+    private RefreshTokenRepository refreshTokenRepository;
     
     @Value("${jwt.refreshTokenExpirationTimeInMillis}")
     private Long refreshTokenExpirationTimeInMillis;
     
-    public RefreshTokenService(UserService userService) {
+    public RefreshTokenService(UserService userService, RefreshTokenRepository refreshTokenRepository) {
         super();
         this.userService = userService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public RefreshToken generateRefreshToken (Integer userId) {
         
         Optional<User> userOpt = userService.findById(userId);
         if (userOpt.isPresent()) {
-            return new RefreshToken(null, userOpt.get(), UUID.randomUUID().toString(), new Date(System.currentTimeMillis() + refreshTokenExpirationTimeInMillis));
+            RefreshToken refreshToken = new RefreshToken(userOpt.get(), UUID.randomUUID().toString(), new Date(System.currentTimeMillis() + refreshTokenExpirationTimeInMillis));
+            refreshToken = refreshTokenRepository.save(refreshToken);
+            return refreshToken;
         }
         return null;
     }

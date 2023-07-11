@@ -49,6 +49,10 @@ public class User implements UserDetails {
         return username;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
