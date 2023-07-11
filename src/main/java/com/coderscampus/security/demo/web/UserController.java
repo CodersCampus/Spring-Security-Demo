@@ -55,4 +55,10 @@ public class UserController {
         
         return ResponseEntity.ok(new AuthenticationResponse(loggedInUser.getUsername(), accessToken, refreshToken.getRefreshToken()));
     }
+    
+    @PostMapping("/refreshtoken")
+    public ResponseEntity<?> getNewAccessToken (String refreshToken) {
+        refreshTokenService.createNewAccessToken(refreshToken);
+        return ResponseEntity.ok(null);
+    }
 }

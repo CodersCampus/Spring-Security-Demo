@@ -1,6 +1,7 @@
 package com.coderscampus.security.demo.service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,17 +14,19 @@ import com.coderscampus.security.demo.repository.RefreshTokenRepository;
 
 @Service
 public class RefreshTokenService {
-    
-    private UserService userService;
-    private RefreshTokenRepository refreshTokenRepository;
-    
     @Value("${jwt.refreshTokenExpirationTimeInMillis}")
     private Long refreshTokenExpirationTimeInMillis;
     
-    public RefreshTokenService(UserService userService, RefreshTokenRepository refreshTokenRepository) {
+    private UserService userService;
+    private RefreshTokenRepository refreshTokenRepository;
+    private JwtService jwtService; 
+    
+    public RefreshTokenService(UserService userService, RefreshTokenRepository refreshTokenRepository,
+            JwtService jwtService) {
         super();
         this.userService = userService;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtService = jwtService;
     }
 
     public RefreshToken generateRefreshToken (Integer userId) {
@@ -53,6 +56,16 @@ public class RefreshTokenService {
 
     private Date getRefreshTokenExpirationDate() {
         return new Date(System.currentTimeMillis() + refreshTokenExpirationTimeInMillis);
+    }
+
+    public String createNewAccessToken(String refreshToken) {
+        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(refreshToken);
+        
+        String accessToken = refreshTokenOpt.map(refreshTokenObj -> jwtService.generateToken(new HashMap<>(), refreshTokenObj.getUser()))
+                                                         .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
+        
+        return accessToken;
+        
     }
     
     
