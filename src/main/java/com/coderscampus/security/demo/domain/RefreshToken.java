@@ -12,12 +12,14 @@ import jakarta.persistence.OneToOne;
 @Entity
 public class RefreshToken {
         @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+        private Integer id;
         @OneToOne
         @JoinColumn(name="user_id", referencedColumnName = "id")
         private User user;
         private String refreshToken;
         private Date expirationDate;
+        
+        public RefreshToken () {}
         
         public RefreshToken(User user, String refreshToken, Date expirationDate) {
             super();
@@ -26,10 +28,10 @@ public class RefreshToken {
             this.expirationDate = expirationDate;
         }
         
-        public Long getId() {
+        public Integer getId() {
             return id;
         }
-        public void setId(Long id) {
+        public void setId(Integer id) {
             this.id = id;
         }
         public User getUser() {
