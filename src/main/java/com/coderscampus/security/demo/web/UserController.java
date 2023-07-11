@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.coderscampus.security.demo.domain.RefreshToken;
 import com.coderscampus.security.demo.domain.User;
 import com.coderscampus.security.demo.repository.UserRepository;
+import com.coderscampus.security.demo.request.RefreshTokenRequest;
 import com.coderscampus.security.demo.response.AuthenticationResponse;
+import com.coderscampus.security.demo.response.RefreshTokenResponse;
 import com.coderscampus.security.demo.service.JwtService;
 import com.coderscampus.security.demo.service.RefreshTokenService;
 import com.coderscampus.security.demo.service.UserService;
@@ -57,8 +59,8 @@ public class UserController {
     }
     
     @PostMapping("/refreshtoken")
-    public ResponseEntity<?> getNewAccessToken (String refreshToken) {
-        refreshTokenService.createNewAccessToken(refreshToken);
-        return ResponseEntity.ok(null);
+    public ResponseEntity<RefreshTokenResponse> getNewAccessToken (@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        String accessToken = refreshTokenService.createNewAccessToken(refreshTokenRequest);
+        return ResponseEntity.ok(new RefreshTokenResponse(accessToken, refreshTokenRequest.refreshToken()));
     }
 }

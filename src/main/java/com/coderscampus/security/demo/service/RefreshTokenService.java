@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.coderscampus.security.demo.domain.RefreshToken;
 import com.coderscampus.security.demo.domain.User;
 import com.coderscampus.security.demo.repository.RefreshTokenRepository;
+import com.coderscampus.security.demo.request.RefreshTokenRequest;
 
 @Service
 public class RefreshTokenService {
@@ -58,14 +59,23 @@ public class RefreshTokenService {
         return new Date(System.currentTimeMillis() + refreshTokenExpirationTimeInMillis);
     }
 
-    public String createNewAccessToken(String refreshToken) {
-        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(refreshToken);
-        
-        String accessToken = refreshTokenOpt.map(refreshTokenObj -> jwtService.generateToken(new HashMap<>(), refreshTokenObj.getUser()))
-                                                         .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
+    public String createNewAccessToken(RefreshTokenRequest refreshTokenRequest) {
+        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(refreshTokenRequest.refreshToken());
+        // TODO: write code to check that the RefreshToken hasn't expired
+        String accessToken = refreshTokenOpt.map(RefreshTokenService::isNonExpired)
+                .map(refreshToken -> jwtService.generateToken(new HashMap<>(), refreshToken.getUser()))
+                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
         
         return accessToken;
         
+    }
+    
+    private static RefreshToken isNonExpired (RefreshToken refreshToken) {
+        if (refreshToken.getExpirationDate().after(new Date())) {
+            return refreshToken;
+        } else {
+            throw new IllegalArgumentException("Refresh Token has expired");
+        }
     }
     
     
