@@ -50,9 +50,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("accessToken")) {
+                if (cookie.getName().equals(CookieUtils.ACCESS_TOKEN_NAME)) {
                     accessTokenCookie = cookie;
-                } else if (cookie.getName().equals("refreshToken")) {
+                } else if (cookie.getName().equals(CookieUtils.REFRESH_TOKEN_NAME)) {
                     refreshTokenCookie = cookie;
                 }
             }
@@ -84,10 +84,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         } 
                     }
                 } catch (ExpiredJwtException e) {
-                    token = refreshTokenService.createNewAccessToken(new RefreshTokenRequest(refreshTokenCookie.getValue()));
-                    accessTokenCookie = CookieUtils.createAccessTokenCookie(token);
-                    
-                    response.addCookie(accessTokenCookie);
+                    try {
+                        token = refreshTokenService.createNewAccessToken(new RefreshTokenRequest(refreshTokenCookie.getValue()));
+                        accessTokenCookie = CookieUtils.createAccessTokenCookie(token);
+                        
+                        response.addCookie(accessTokenCookie);
+                    } catch (Exception e1) {
+                        // there was a problem creating a new access token, 
+                        //  we're ignore this error on purpose in order to allow
+                        //  the flow of the filterChain to continue
+                    }
                 }
                 loginTryCount++;
             }

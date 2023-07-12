@@ -39,10 +39,10 @@ public class RefreshTokenService {
             RefreshToken refreshToken = null;
             if (refreshTokenOpt.isPresent()) {
                 refreshToken = refreshTokenOpt.get();
-                refreshToken.setExpirationDate(getRefreshTokenExpirationDate());
+                refreshToken.setExpirationDate(generateRefreshTokenExpirationDate());
                 refreshToken.setRefreshToken(generateRandomTokenValue());
             } else {
-                refreshToken = new RefreshToken(userOpt.get(), generateRandomTokenValue(), getRefreshTokenExpirationDate());
+                refreshToken = new RefreshToken(userOpt.get(), generateRandomTokenValue(), generateRefreshTokenExpirationDate());
             }
             
             refreshToken = refreshTokenRepository.save(refreshToken);
@@ -55,7 +55,7 @@ public class RefreshTokenService {
         return UUID.randomUUID().toString();
     }
 
-    private Date getRefreshTokenExpirationDate() {
+    private Date generateRefreshTokenExpirationDate() {
         return new Date(System.currentTimeMillis() + refreshTokenExpirationTimeInMillis);
     }
 
