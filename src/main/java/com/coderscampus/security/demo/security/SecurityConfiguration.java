@@ -46,13 +46,16 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
           .authorizeHttpRequests((request) -> {
             request
-                   .requestMatchers("/api/v1/users").permitAll()
-                   .requestMatchers("/api/v1/users/**").permitAll()
+                   .requestMatchers("/api/v1/users", "/api/v1/users/**").permitAll()
                    .anyRequest().authenticated();
         })
         .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider())
-          .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+          .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .formLogin(login -> {
+            login.loginPage("/login");
+            login.permitAll();
+        });
         
         return http.build();
     }
