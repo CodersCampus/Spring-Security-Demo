@@ -1,11 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>login</title>
+<title>Login page</title>
+<style>
+.error {
+	color: red;
+}
+</style>
 </head>
 <body>
-<h1>Please Login</h1>
-
-This is our custom page yo!
+	<h1>Login page</h1>
+	<p th:if="${loginError}" class="error">Wrong username or password</p>
+	<form th:action="@{/login}" method="post">
+		<label for="username">Username</label>: 
+		<input type="text" id="username" name="username" autofocus="autofocus" /> <br /> 
+	  <label for="password">Password</label>: 
+		<input type="password" id="password" name="password" /> <br /> 
+		<input type="submit" value="Log in" />
+	</form>
 </body>
 </html>
