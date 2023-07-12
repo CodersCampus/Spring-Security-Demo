@@ -25,6 +25,7 @@ import com.coderscampus.security.demo.repository.UserRepository;
 import com.coderscampus.security.demo.service.JwtService;
 import com.coderscampus.security.demo.service.RefreshTokenService;
 import com.coderscampus.security.demo.service.UserService;
+import com.coderscampus.security.demo.util.CookieUtils;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -84,8 +85,8 @@ public class SecurityConfiguration {
                     String accessToken = jwtService.generateToken(new HashMap<>(), user);
                     RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user.getId());
                     
-                    Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-                    Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken.getRefreshToken());
+                    Cookie accessTokenCookie = CookieUtils.createAccessTokenCookie(accessToken);
+                    Cookie refreshTokenCookie = CookieUtils.createRefreshTokenCookie(refreshToken.getRefreshToken());
                     
                     response.addCookie(accessTokenCookie);
                     response.addCookie(refreshTokenCookie);

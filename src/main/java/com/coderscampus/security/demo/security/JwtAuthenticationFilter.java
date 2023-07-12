@@ -11,9 +11,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.coderscampus.security.demo.request.RefreshTokenRequest;
 import com.coderscampus.security.demo.service.JwtService;
+import com.coderscampus.security.demo.service.RefreshTokenService;
 import com.coderscampus.security.demo.service.UserService;
+import com.coderscampus.security.demo.util.CookieUtils;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -25,11 +29,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private JwtService jwtService;
     private UserService userService;
-    
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
+    private RefreshTokenService refreshTokenService;
+
+    public JwtAuthenticationFilter(JwtService jwtService, UserService userService,
+            RefreshTokenService refreshTokenService) {
         super();
         this.jwtService = jwtService;
         this.userService = userService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Override
@@ -54,21 +61,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (accessTokenCookie != null) {
             // hey, we have a token (probably) in the request
             // let's see if this token is a valid JWS or not
-            String token = accessTokenCookie.getValue();
-            String subject = jwtService.getSubject(token);
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             
-            if (StringUtils.hasText(subject) && authentication == null) {
-                UserDetails userDetails = userService.loadUserByUsername(subject);
-                
-                if (jwtService.isValidToken(token, userDetails)) {
-                    SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, 
-                                        userDetails.getPassword(),
-                                        userDetails.getAuthorities());
-                    securityContext.setAuthentication(authToken);
-                    SecurityContextHolder.setContext(securityContext);
-                } 
+            int loginTryCount = 0;
+            
+            while (loginTryCount <= 2) {
+                String token = accessTokenCookie.getValue();
+                try {
+                    String subject = jwtService.getSubject(token);
+                    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                    
+                    if (StringUtils.hasText(subject) && authentication == null) {
+                        UserDetails userDetails = userService.loadUserByUsername(subject);
+                        
+                        if (jwtService.isValidToken(token, userDetails)) {
+                            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, 
+                                    userDetails.getPassword(),
+                                    userDetails.getAuthorities());
+                            securityContext.setAuthentication(authToken);
+                            SecurityContextHolder.setContext(securityContext);
+                            break;
+                        } 
+                    }
+                } catch (ExpiredJwtException e) {
+                    token = refreshTokenService.createNewAccessToken(new RefreshTokenRequest(refreshTokenCookie.getValue()));
+                    accessTokenCookie = CookieUtils.createAccessTokenCookie(token);
+                    
+                    response.addCookie(accessTokenCookie);
+                }
+                loginTryCount++;
             }
         }
         filterChain.doFilter(request, response);
