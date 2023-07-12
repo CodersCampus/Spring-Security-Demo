@@ -16,6 +16,7 @@ import com.coderscampus.security.demo.service.UserService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -37,12 +38,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Requests: 
         //  Headers -> key/value pairs (Authorization -> Bearer xxx.yyy.zzz)
         //  Body -> (if JSON) key/value pairs
-        String authHeader = request.getHeader("Authorization");
+        Cookie accessTokenCookie = null;
+        Cookie refreshTokenCookie = null;
         
-        if (StringUtils.hasText(authHeader)) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("accessToken")) {
+                    accessTokenCookie = cookie;
+                } else if (cookie.getName().equals("refreshToken")) {
+                    refreshTokenCookie = cookie;
+                }
+            }
+        }
+        
+        if (accessTokenCookie != null) {
             // hey, we have a token (probably) in the request
             // let's see if this token is a valid JWS or not
-            String token = authHeader.substring(7);
+            String token = accessTokenCookie.getValue();
             String subject = jwtService.getSubject(token);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             

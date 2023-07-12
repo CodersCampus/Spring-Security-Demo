@@ -1,6 +1,7 @@
 package com.coderscampus.security.demo.security;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +19,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.coderscampus.security.demo.domain.RefreshToken;
+import com.coderscampus.security.demo.domain.User;
 import com.coderscampus.security.demo.repository.UserRepository;
+import com.coderscampus.security.demo.service.JwtService;
+import com.coderscampus.security.demo.service.RefreshTokenService;
 import com.coderscampus.security.demo.service.UserService;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -32,11 +38,16 @@ public class SecurityConfiguration {
 // Example URL -> http://localhost:8080/products
     private UserRepository userRepository;
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private JwtService jwtService;
+    private RefreshTokenService refreshTokenService;
     
-    public SecurityConfiguration(UserRepository userRepository, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfiguration(UserRepository userRepository, JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtService jwtService, RefreshTokenService refreshTokenService) {
         super();
         this.userRepository = userRepository;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Bean
@@ -68,8 +79,17 @@ public class SecurityConfiguration {
                 @Override
                 public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                         Authentication authentication) throws IOException, ServletException {
-                    response.sendRedirect("/products");
+                    User user = (User) authentication.getPrincipal();
                     
+                    String accessToken = jwtService.generateToken(new HashMap<>(), user);
+                    RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user.getId());
+                    
+                    Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+                    Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken.getRefreshToken());
+                    
+                    response.addCookie(accessTokenCookie);
+                    response.addCookie(refreshTokenCookie);
+                    response.sendRedirect("/products");
                 }
             });
             login.permitAll();
